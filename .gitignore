@@ -22,3 +22,38 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Additional ignores
+# Build output
+/build/
+
+# OS files
+Thumbs.db
+
+# Env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc
+*.tmp
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Parcel-bundler cache
+.cache/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Tailwind
+.tailwind*
