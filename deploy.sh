@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build the project first
+# Build the project
 echo "Building the project..."
 npm run build
 

@@ -1,64 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MovieCard, { type Movie } from '../components/MovieCard';
-
-const MOCK_MOVIES: Movie[] = [
-  {
-    id: '1',
-    title: 'Inception',
-    genre: 'Sci-Fi',
-    rating: 8.8,
-    duration: '2h 28m',
-    posterUrl: 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=800&auto=format&fit=crop',
-    description: 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.',
-  },
-  {
-    id: '2',
-    title: 'The Dark Knight',
-    genre: 'Action',
-    rating: 9.0,
-    duration: '2h 32m',
-    posterUrl: 'https://images.unsplash.com/photo-1478720568477-152d9b164e63?q=80&w=800&auto=format&fit=crop',
-    description: 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.',
-  },
-  {
-    id: '3',
-    title: 'Interstellar',
-    genre: 'Sci-Fi',
-    rating: 8.6,
-    duration: '2h 49m',
-    posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
-    description: 'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',
-  },
-  {
-    id: '4',
-    title: 'Dune: Part Two',
-    genre: 'Sci-Fi',
-    rating: 8.9,
-    duration: '2h 46m',
-    posterUrl: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=800&auto=format&fit=crop',
-    description: 'Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family.',
-  },
-  {
-    id: '5',
-    title: 'Oppenheimer',
-    genre: 'Biography',
-    rating: 8.4,
-    duration: '3h 00m',
-    posterUrl: 'https://images.unsplash.com/photo-1550100136-e074fa714874?q=80&w=800&auto=format&fit=crop',
-    description: 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.',
-  },
-  {
-    id: '6',
-    title: 'Spider-Man: Across the Spider-Verse',
-    genre: 'Animation',
-    rating: 8.7,
-    duration: '2h 20m',
-    posterUrl: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=800&auto=format&fit=crop',
-    description: 'Miles Morales catapults across the Multiverse, where he encounters a team of Spider-People charged with protecting its very existence.',
-  },
-];
+import { fetchMovies, formatDuration, type MovieApiResponse } from '../services/api';
 
 const Dashboard: React.FC = () => {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadMovies = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetchMovies(true); // Fetch only active movies
+        
+        // Map API response to Movie interface
+        const mappedMovies: Movie[] = response.items.map((movie: MovieApiResponse) => ({
+          id: String(movie.movie_id),
+          title: movie.name,
+          genre: movie.genres && movie.genres.length > 0 ? movie.genres[0] : 'Unknown',
+          rating: movie.rating ? Number(movie.rating) : 0,
+          duration: formatDuration(movie.runtime_minutes),
+          posterUrl: 'https://via.placeholder.com/400x600?text=Movie+Poster', // Placeholder image
+          description: `A ${movie.language || 'film'} movie${movie.genres && movie.genres.length > 0 ? ` in the ${movie.genres.join(', ')} genre` : ''}.${movie.release_date ? ` Released on ${new Date(movie.release_date).toLocaleDateString()}.` : ''}`, // Placeholder description
+        }));
+        
+        setMovies(mappedMovies);
+      } catch (err) {
+        console.error('Failed to load movies:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load movies');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMovies();
+  }, []);
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -73,11 +51,32 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {MOCK_MOVIES.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
-        ))}
-      </div>
+      {loading && (
+        <div className="text-center py-12">
+          <p className="text-slate-600">Loading movies...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <p className="font-semibold">Error loading movies</p>
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
+      
+      {!loading && !error && movies.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-slate-600">No movies available at the moment.</p>
+        </div>
+      )}
+      
+      {!loading && !error && movies.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {movies.map((movie) => (
+            <MovieCard key={movie.id} movie={movie} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

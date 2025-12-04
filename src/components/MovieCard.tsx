@@ -26,10 +26,12 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
-        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-          <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-          {movie.rating}
-        </div>
+        {movie.rating > 0 && (
+          <div className="absolute top-2 right-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+            {movie.rating.toFixed(1)}
+          </div>
+        )}
       </div>
       <div className="p-4 flex flex-col flex-grow">
         <h3 className="font-bold text-lg text-slate-900 mb-1 line-clamp-1" title={movie.title}>
