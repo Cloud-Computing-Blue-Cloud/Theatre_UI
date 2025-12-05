@@ -2,7 +2,7 @@
 
 // Base URL for the movie service
 // Replace YOUR_VM_IP with your actual VM's external IP address
-const MOVIE_SERVICE_URL = 'http://localhost:8050';
+const MOVIE_SERVICE_URL = 'http://localhost:5001';
 
 export interface MovieApiResponse {
   movie_id: number;
