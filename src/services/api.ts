@@ -358,6 +358,11 @@ export const bookingApi = {
     console.log("Received user bookings");
     console.log(response.data);
     return response.data.bookings;
+  },
+
+  getBooking: async (bookingId: number) => {
+    const response = await axios.get(`${BOOKING_API_URL}/api/bookings/${bookingId}`);
+    return response.data.booking;
   }
 };
 

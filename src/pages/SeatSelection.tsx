@@ -74,18 +74,32 @@ const SeatSelection: React.FC = () => {
       }
       const userId = parseInt(storedUserId, 10);
       
-      await bookingApi.createBooking({
+      const response = await bookingApi.createBooking({
         user_id: userId,
         showtime_id: showtime.showtime_id,
         seats: selectedSeats
       });
 
-      alert('Booking successful! Redirecting to your bookings...');
-      navigate('/bookings');
+      // Start polling
+      const bookingId = response.booking_id;
+      const pollInterval = setInterval(async () => {
+        try {
+          const booking = await bookingApi.getBooking(bookingId);
+          if (booking.status.toLowerCase() === 'confirmed') {
+            clearInterval(pollInterval);
+            setBookingInProgress(false);
+            alert('Booking successful! Redirecting to your bookings...');
+            navigate('/bookings');
+          }
+        } catch (err) {
+          console.error("Error polling booking status:", err);
+          // Optional: handle polling error (maybe stop after N retries)
+        }
+      }, 1000);
+
     } catch (err) {
       console.error(err);
       alert('Failed to create booking. Please try again.');
-    } finally {
       setBookingInProgress(false);
     }
   };
