@@ -66,8 +66,13 @@ const SeatSelection: React.FC = () => {
     
     try {
       setBookingInProgress(true);
-      // Hardcoded user_id for now as we don't have auth yet
-      const userId = 1; 
+      // Get user ID from local storage or default to 1
+      let storedUserId = localStorage.getItem('userId');
+      if (!storedUserId) {
+        storedUserId = '1';
+        localStorage.setItem('userId', storedUserId);
+      }
+      const userId = parseInt(storedUserId, 10);
       
       await bookingApi.createBooking({
         user_id: userId,

@@ -4,9 +4,9 @@ import axios from "axios";
 
 // Base URLs - can be configured via environment variables
 const MOVIE_API_URL = import.meta.env.VITE_MOVIE_API_URL || '';
-// const THEATRE_API_URL = import.meta.env.VITE_THEATRE_API_URL || 'http://localhost:8003';
-// const BOOKING_API_URL = import.meta.env.VITE_BOOKING_API_URL || 'http://localhost:5003';
-// const USER_API_URL = import.meta.env.VITE_USER_API_URL || 'http://localhost:8001';
+const THEATRE_API_URL = import.meta.env.VITE_THEATRE_API_URL || 'http://localhost:8003';
+const BOOKING_API_URL = import.meta.env.VITE_BOOKING_API_URL || 'http://localhost:5003';
+const USER_API_URL = import.meta.env.VITE_USER_API_URL || 'http://localhost:8001';
 
 export interface Movie {
   movie_id: number;
@@ -54,6 +54,26 @@ export interface BookedSeat {
   col: number;
   status: string;
   booking_id: number;
+}
+
+export interface User {
+  user_id: number;
+  first_name: string;
+  last_name?: string;
+  email: string;
+  created_at: string;
+}
+
+export interface Booking {
+  booking_id: number;
+  user_id: number;
+  showtime_id: number;
+  payment_id?: number;
+  booking_time: string;
+  status: string;
+  seats: BookedSeat[];
+  created_at: string;
+  updated_at: string;
 }
 
 // Mock Data
@@ -190,16 +210,16 @@ export const movieApi = {
   
   getById: async (id: string) => {
     // REAL IMPLEMENTATION:
-    /*
+    
     const response = await axios.get(`${MOVIE_API_URL}/movies/${id}`);
     return response.data;
-    */
+    
 
     // MOCK IMPLEMENTATION:
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const movie = MOCK_MOVIES.find(m => m.movie_id === Number(id));
-    if (!movie) throw new Error('Movie not found');
-    return movie;
+    // await new Promise(resolve => setTimeout(resolve, 300));
+    // const movie = MOCK_MOVIES.find(m => m.movie_id === Number(id));
+    // if (!movie) throw new Error('Movie not found');
+    // return movie;
   }
 };
 
@@ -207,66 +227,74 @@ export const movieApi = {
 export const theatreApi = {
   getShowtimes: async (movieId: string) => {
     // REAL IMPLEMENTATION:
-    /*
+  
     const response = await axios.get(`${THEATRE_API_URL}/showtimes`, {
       params: { movie_id: movieId }
     });
+    console.log("asf");
+    
+    console.log(response.data);
     return response.data;
-    */
+    
 
     // MOCK IMPLEMENTATION:
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return MOCK_SHOWTIMES.filter(s => s.movie_id === Number(movieId));
+    // await new Promise(resolve => setTimeout(resolve, 400));
+    // return MOCK_SHOWTIMES.filter(s => s.movie_id === Number(movieId));
   },
 
   getShowtimeById: async (showtimeId: string) => {
     // REAL IMPLEMENTATION:
-    /*
+
     const response = await axios.get(`${THEATRE_API_URL}/showtimes/${showtimeId}`);
     return response.data;
-    */
+
 
     // MOCK IMPLEMENTATION:
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const showtime = MOCK_SHOWTIMES.find(s => s.showtime_id === Number(showtimeId));
-    if (!showtime) throw new Error('Showtime not found');
-    return showtime;
+    // await new Promise(resolve => setTimeout(resolve, 300));
+    // const showtime = MOCK_SHOWTIMES.find(s => s.showtime_id === Number(showtimeId));
+    // if (!showtime) throw new Error('Showtime not found');
+    // return showtime;
   },
 
   getScreen: async (screenId: number) => {
     // REAL IMPLEMENTATION:
-    /*
     const response = await axios.get(`${THEATRE_API_URL}/screens/${screenId}`);
+    console.log("Received screen data");
+    console.log(response.data);
+    
     return response.data;
-    */
 
     // MOCK IMPLEMENTATION:
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const screen = MOCK_SCREENS[screenId];
-    if (!screen) throw new Error('Screen not found');
-    return screen;
+    // await new Promise(resolve => setTimeout(resolve, 300));
+    // const screen = MOCK_SCREENS[screenId];
+    // if (!screen) throw new Error('Screen not found');
+    // return screen;
   },
 
   getTheatre: async (theatreId: number) => {
     // REAL IMPLEMENTATION:
-    /*
+
     const response = await axios.get(`${THEATRE_API_URL}/theatres/${theatreId}`);
+    console.log("Received theatre data");
+    console.log(response.data);
+    
     return response.data;
-    */
+
 
     // MOCK IMPLEMENTATION:
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const theatre = MOCK_THEATRES[theatreId];
-    if (!theatre) throw new Error('Theatre not found');
-    return theatre;
+    // await new Promise(resolve => setTimeout(resolve, 300));
+    // const theatre = MOCK_THEATRES[theatreId];
+    // if (!theatre) throw new Error('Theatre not found');
+    // return theatre;
   },
 
   getCinema: async (cinemaId: number) => {
     // REAL IMPLEMENTATION:
-    /*
     const response = await axios.get(`${THEATRE_API_URL}/cinemas/${cinemaId}`);
+    console.log("Received cinema data");
+    console.log(response.data);
+    
     return response.data;
-    */
 
     // MOCK IMPLEMENTATION:
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -280,24 +308,26 @@ export const theatreApi = {
 export const bookingApi = {
   getBookedSeats: async (showtimeId: string) => {
     // REAL IMPLEMENTATION:
-    /*
+
     const response = await axios.get(`${BOOKING_API_URL}/api/bookings/showtime/${showtimeId}/seats`);
+    console.log("Received booked seats data");
+    console.log(response.data);
     return response.data.seats;
-    */
+    
 
     // MOCK IMPLEMENTATION:
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // Return random subset of booked seats for variety if needed, 
-    // or just static list for now.
-    // Let's make it deterministic based on showtimeId to look real
-    if (Number(showtimeId) % 2 === 0) {
-        return MOCK_BOOKED_SEATS;
-    }
-    return [
-        { row: 2, col: 2, status: 'booked', booking_id: 10 },
-        { row: 2, col: 3, status: 'booked', booking_id: 10 },
-        { row: 3, col: 4, status: 'booked', booking_id: 11 }
-    ];
+    // await new Promise(resolve => setTimeout(resolve, 300));
+    // // Return random subset of booked seats for variety if needed, 
+    // // or just static list for now.
+    // // Let's make it deterministic based on showtimeId to look real
+    // if (Number(showtimeId) % 2 === 0) {
+    //     return MOCK_BOOKED_SEATS;
+    // }
+    // return [
+    //     { row: 2, col: 2, status: 'booked', booking_id: 10 },
+    //     { row: 2, col: 3, status: 'booked', booking_id: 10 },
+    //     { row: 3, col: 4, status: 'booked', booking_id: 11 }
+    // ];
   },
 
   createBooking: async (bookingData: {
@@ -306,18 +336,42 @@ export const bookingApi = {
     seats: { row: number; col: number }[];
   }) => {
     // REAL IMPLEMENTATION:
-    /*
     const response = await axios.post(`${BOOKING_API_URL}/api/bookings/`, bookingData);
+    console.log("Received booking data");
+    console.log(response.data);
     return response.data;
-    */
+    
 
     // MOCK IMPLEMENTATION:
-    await new Promise(resolve => setTimeout(resolve, 800));
-    console.log('Mock Booking Created:', bookingData);
-    return {
-        booking_id: Math.floor(Math.random() * 10000),
-        status: 'confirmed',
-        message: 'Booking created successfully (MOCK)'
-    };
+    // await new Promise(resolve => setTimeout(resolve, 800));
+    // console.log('Mock Booking Created:', bookingData);
+    // return {
+    //     booking_id: Math.floor(Math.random() * 10000),
+    //     status: 'confirmed',
+    //     message: 'Booking created successfully (MOCK)'
+    // };
+  },
+
+  getUserBookings: async (userId: number) => {
+    // REAL IMPLEMENTATION:
+    const response = await axios.get(`${BOOKING_API_URL}/api/bookings/user/${userId}`);
+    console.log("Received user bookings");
+    console.log(response.data);
+    return response.data.bookings;
+  }
+};
+
+// User Service
+export const userApi = {
+  getProfile: async (userId: number) => {
+    const response = await axios.get(`${USER_API_URL}/users/${userId}`);
+    console.log("Received user profile");
+    console.log(response.data);
+    return response.data;
+  },
+  
+  updateProfile: async (userId: number, data: Partial<User>) => {
+    const response = await axios.put(`${USER_API_URL}/users/${userId}`, data);
+    return response.data;
   }
 };
