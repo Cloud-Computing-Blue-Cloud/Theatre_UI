@@ -95,7 +95,7 @@ const SeatSelection: React.FC = () => {
           console.error("Error polling booking status:", err);
           // Optional: handle polling error (maybe stop after N retries)
         }
-      }, 1000);
+      }, 5000);
 
     } catch (err) {
       console.error(err);
