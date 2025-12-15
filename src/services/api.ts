@@ -3,10 +3,37 @@
 import axios from "axios";
 
 // Base URLs - can be configured via environment variables
-const MOVIE_API_URL = import.meta.env.VITE_MOVIE_API_URL || '';
-const THEATRE_API_URL = import.meta.env.VITE_THEATRE_API_URL || 'http://localhost:8003';
+const MOVIE_API_URL = import.meta.env.VITE_MOVIE_API_URL || 'http://localhost:5001';
+const THEATRE_API_URL = import.meta.env.VITE_THEATRE_API_URL || 'http://localhost:5002';
 const BOOKING_API_URL = import.meta.env.VITE_BOOKING_API_URL || 'http://localhost:5003';
-const USER_API_URL = import.meta.env.VITE_USER_API_URL || 'http://localhost:8001';
+const USER_API_URL = import.meta.env.VITE_USER_API_URL || 'http://localhost:5004';
+
+// https://user-services-567526779141.us-central1.run.app
+
+// Axios interceptor to add JWT token to requests
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwt_token');
+    if (token && config.url?.includes(USER_API_URL)) {
+      // Only add token to UserService requests that need authentication
+      // Check if this is a protected endpoint
+      const protectedEndpoints = ['/users/', '/auth/'];
+      const isProtected = protectedEndpoints.some(endpoint => 
+        config.url?.includes(endpoint) && 
+        (config.method === 'put' || config.method === 'delete')
+      );
+      
+      if (isProtected || config.headers?.Authorization) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export interface Movie {
   movie_id: number;
@@ -368,15 +395,46 @@ export const bookingApi = {
 
 // User Service
 export const userApi = {
-  getProfile: async (userId: number) => {
-    const response = await axios.get(`${USER_API_URL}/users/${userId}`);
+  googleLogin: async (redirectUri?: string) => {
+    const params = redirectUri ? { redirect_uri: redirectUri } : {};
+    const response = await axios.get(`${USER_API_URL}/auth/google/login`, { params });
+    return response.data;
+  },
+
+  googleOAuthCallback: async (code: string, redirectUri?: string) => {
+    const params: any = { code };
+    if (redirectUri) {
+      params.redirect_uri = redirectUri;
+    }
+    const response = await axios.get(`${USER_API_URL}/auth/google/callback`, { params });
+    return response.data;
+  },
+
+  login: async (email: string, password: string) => {
+    const response = await axios.post(`${USER_API_URL}/auth/token`, null, {
+      params: { email, password }
+    });
+    return response.data;
+  },
+
+  getProfile: async (userId: number, token?: string) => {
+    const config = token ? {
+      headers: { Authorization: `Bearer ${token}` }
+    } : {};
+    const response = await axios.get(`${USER_API_URL}/users/${userId}`, config);
     console.log("Received user profile");
     console.log(response.data);
     return response.data;
   },
   
-  updateProfile: async (userId: number, data: Partial<User>) => {
-    const response = await axios.put(`${USER_API_URL}/users/${userId}`, data);
+  updateProfile: async (userId: number, data: Partial<User>, token: string) => {
+    const response = await axios.put(
+      `${USER_API_URL}/users/${userId}`,
+      data,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
     return response.data;
   }
 };

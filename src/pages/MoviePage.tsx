@@ -28,7 +28,7 @@ const MoviePage: React.FC = () => {
         setMovie(movieData);
 
         // Enrich showtimes with Screen, Theatre, and Cinema data
-        const enriched = await Promise.all(showtimesData.map(async (showtime) => {
+        const enriched = await Promise.all(showtimesData.map(async (showtime: Showtime) => {
           const screen = await theatreApi.getScreen(showtime.screen_id);
           const theatre = await theatreApi.getTheatre(screen.theatre_id);
           const cinema = await theatreApi.getCinema(theatre.cinema_id);

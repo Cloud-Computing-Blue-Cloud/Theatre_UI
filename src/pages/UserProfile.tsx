@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { userApi, type User } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const UserProfile: React.FC = () => {
+  const { user: authUser, token } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!authUser) {
+        setLoading(false);
+        return;
+      }
+      
       try {
-        // Get user ID from local storage or default to 1
-        let storedUserId = localStorage.getItem('userId');
-        if (!storedUserId) {
-          storedUserId = '1';
-          localStorage.setItem('userId', storedUserId);
-        }
-        const userId = parseInt(storedUserId, 10);
-        const data = await userApi.getProfile(userId);
+        const data = await userApi.getProfile(authUser.user_id, token || undefined);
         setUser(data);
       } catch (err) {
         console.error('Failed to fetch user profile:', err);
@@ -27,7 +28,7 @@ const UserProfile: React.FC = () => {
     };
 
     fetchProfile();
-  }, []);
+  }, [authUser, token]);
 
   if (loading) {
     return (
