@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { theatreApi, bookingApi, type Showtime, type Screen, type BookedSeat, type Theatre } from '../services/api';
 import { Loader2, ArrowLeft, MapPin } from 'lucide-react';
 import Button from '../components/ui/Button';
+import { useAuth } from '../contexts/AuthContext';
 
 const SeatSelection: React.FC = () => {
   const { showtimeId } = useParams<{ showtimeId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [showtime, setShowtime] = useState<Showtime | null>(null);
   const [screen, setScreen] = useState<Screen | null>(null);
@@ -64,18 +66,17 @@ const SeatSelection: React.FC = () => {
   const handleBooking = async () => {
     if (!showtime || selectedSeats.length === 0) return;
     
+    if (!user) {
+      alert('Please login to make a booking');
+      navigate('/login');
+      return;
+    }
+    
     try {
       setBookingInProgress(true);
-      // Get user ID from local storage or default to 1
-      let storedUserId = localStorage.getItem('userId');
-      if (!storedUserId) {
-        storedUserId = '1';
-        localStorage.setItem('userId', storedUserId);
-      }
-      const userId = parseInt(storedUserId, 10);
       
       const response = await bookingApi.createBooking({
-        user_id: userId,
+        user_id: user.user_id,
         showtime_id: showtime.showtime_id,
         seats: selectedSeats
       });

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bookingApi, theatreApi, movieApi, type Booking, type Showtime, type Movie, type Theatre, type Screen } from '../services/api';
 import { Loader2, Calendar, MapPin, Ticket } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface BookingWithDetails extends Booking {
   movie?: Movie;
@@ -14,18 +15,14 @@ const MyBookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { user } = useAuth();
+
   useEffect(() => {
     const fetchBookings = async () => {
+      if (!user) return;
+      
       try {
-        // Get user ID from local storage or default to 1
-        let storedUserId = localStorage.getItem('userId');
-        if (!storedUserId) {
-          storedUserId = '1';
-          localStorage.setItem('userId', storedUserId);
-        }
-        const userId = parseInt(storedUserId, 10);
-
-        const userBookings = await bookingApi.getUserBookings(userId);
+        const userBookings = await bookingApi.getUserBookings(user.user_id);
         
         // Sort by creation date desc
         userBookings.sort((a: Booking, b: Booking) => 
@@ -71,8 +68,10 @@ const MyBookings: React.FC = () => {
       }
     };
 
-    fetchBookings();
-  }, []);
+    if (user) {
+      fetchBookings();
+    }
+  }, [user]);
 
   if (loading) {
     return (
