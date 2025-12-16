@@ -20,10 +20,25 @@ const Login: React.FC = () => {
   }, [isAuthenticated, navigate]);
 
   // Handle OAuth callback
+  // Handle OAuth callback
   useEffect(() => {
-    const code = searchParams.get('code');
+    // Check both router search params (if #/login?code=...) AND window search params (if index.html?code=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = searchParams.get('code') || urlParams.get('code');
+    
     if (code) {
-      const redirectUri = `${window.location.origin}/login`;
+      // Use the EXACT pathname the browser is currently on.
+      // If the user visits ".../index.html", we send that.
+      // If the user visits ".../", we send that.
+      // This MUST match what is in Google Console.
+      const redirectUri = window.location.origin + window.location.pathname;
+      
+      console.log("Found OAuth code:", code);
+      console.log("Using redirect_uri:", redirectUri);
+      
+      // Alert to help user verify configuration
+      // alert(`DEBUG: Copy this URI to Google Console:\n${redirectUri}`);
+      
       handleOAuthCallback(code, redirectUri);
     }
   }, [searchParams]);
@@ -34,7 +49,11 @@ const Login: React.FC = () => {
     
     try {
       const response = await userApi.googleOAuthCallback(code, redirectUri);
+      console.log("Response from google oauth callback");
       
+      console.log("Response 41", response);
+      
+
       // Store token and user info
       login(response.access_token, response.user);
       
@@ -53,7 +72,10 @@ const Login: React.FC = () => {
     
     try {
       // Get current origin for redirect URI
-      const redirectUri = `${window.location.origin}/login`;
+      // Use consistent redirectUri
+      const redirectUri = window.location.origin + window.location.pathname;
+      // alert(`DEBUG: initiating login with: ${redirectUri}`);
+      
       const response = await userApi.googleLogin(redirectUri);
       
       // Redirect to Google OAuth page

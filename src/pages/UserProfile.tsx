@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { userApi, type User } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+
 
 const UserProfile: React.FC = () => {
   const { user: authUser, token } = useAuth();

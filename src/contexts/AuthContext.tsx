@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 interface User {
   user_id: number;
@@ -35,23 +35,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load auth state from localStorage on mount
+  // Debug: Log when state actually changes
   useEffect(() => {
-    const storedToken = localStorage.getItem('jwt_token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error loading auth state:', error);
-        localStorage.removeItem('jwt_token');
-        localStorage.removeItem('user');
-      }
-    }
+    console.log('[DEBUG] Auth State Updated:', { 
+      isAuthenticated: !!token && !!user, 
+      token: token ? 'Present' : 'Null', 
+      user: user ? user.email : 'Null' 
+    });
     setLoading(false);
-  }, []);
+  }, [token, user]);
 
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
@@ -63,11 +55,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
+    console.log("Logging out...");
+    
+    // Clear storage synchronously
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user');
     localStorage.removeItem('userId');
+    
+    // Schedule state updates
+    setToken(null);
+    setUser(null);
+    
+    console.log("Logout processed (state will update on next render)");
   };
 
   const value: AuthContextType = {
